@@ -1,0 +1,14 @@
+var
+
+a : integer;
+b : integer;
+c : integer;
+
+begin
+    a := 100;
+    a := a+10;
+    b := b-5;
+    c := c*6;
+
+    writeln('value of a is ',a);
+end.
