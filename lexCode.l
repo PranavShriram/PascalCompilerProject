@@ -25,9 +25,9 @@
 "integer"           return _INTEGER;
 
 [_a-zA-Z][_a-zA-Z0-9]*                      return _IDENTIFIER_REGEX;
-[1-9][0-9]*				                    return _INTEGER_REGEX;
+[1-9][0-9]*                                 return _INTEGER_REGEX;
 ['^][ \t\n_a-zA-Z0-9+=-]*[$']               return _STRING_REGEX;
-[ \t\n]					                    ;
+[ \t\n]                                     ;
 
 
 "="                 return _EQUAL;

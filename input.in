@@ -10,5 +10,10 @@ begin
     b := b-5;
     c := c*6;
 
+    if (a < c) then
+        writeln('a is lesser than c');
+    else
+        writeln('a is greater than or equal to c');
+
     writeln('value of a is ',a);
 end.
