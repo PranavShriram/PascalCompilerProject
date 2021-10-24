@@ -1,21 +1,26 @@
 var
 
 
+
+
 a : integer;
 
 
 
 b : integer;
 
+c : integer;
+d : integer;
 
 
 begin
+a := 5;
+b := 10;
+c := a + b + b + a;
 
+d := 10;
+end. 
 
-
-
-
-end.
 
 
 
