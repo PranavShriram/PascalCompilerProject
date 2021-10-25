@@ -1,3 +1,7 @@
 .vscode
 lex.yy.c
 output.exe
+b.in
+fun.exe
+yacc.tab.c
+yacc.tab.h

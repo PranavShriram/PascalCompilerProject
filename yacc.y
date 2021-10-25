@@ -11,11 +11,13 @@ void setSymbolUsed(char symbol);
 %}
 
 
-%union {int num; char id;}
+%union {int num; char id; char* string;}
 %start pascal_code
 %token exit_command
 %token <num> number
+%token <string> string_regex
 %token <id> assignment_operator 
+%token <id> writeln
 %token <id> begin_block
 %token <id> end_block
 %token <id> var_block_start
@@ -25,6 +27,7 @@ void setSymbolUsed(char symbol);
 %token <id> IF THEN LE GE EQ NE OR AND ELSE
 %type <num> pascal_code var_block type_assignment_lines code_block lines exp term
 %type <id> assignment
+%type <id> print
 %type <id> if_then_block if_then_else_block else_if_block
 %right '='
 %left AND OR
@@ -52,6 +55,7 @@ lines : line {;}
       | line lines {;} 
 
 line  : assignment  {;}
+        | print  {;}
         | if_then_else_block {;}
         | if_then_block {;}
 
@@ -69,6 +73,9 @@ else_if_block :   ELSE IF exp THEN line {;}
 
 assignment : identifier assignment_operator exp ';' {if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
 
+print : writeln '(' string_regex ')' ';'  {;}
+      | writeln '(' ')' ';'  {;}
+
 exp : term  {;}
     | '(' exp ')' {;}
     | exp '/' term {;}
@@ -85,7 +92,7 @@ exp : term  {;}
     | exp OR term {;}
     | exp '!' term {;}
 
-term : number {setSymbolUsed($1);}
+term : number {;}
      | identifier {if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
 %%
 

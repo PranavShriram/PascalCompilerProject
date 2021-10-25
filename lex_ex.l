@@ -7,13 +7,12 @@
 
 %%
 "end."    {return exit_command;}
-[a-zA-z]  {yylval.id = yytext[0]; return identifier;}
-[0-9]+    {yylval.num = atoi(yytext); return number;}
 [ \t]     {;}
 [\n]      {printf("Parsing line number %4d\t\n", ++yylineno);}
 ":"       {return type_assignment_operator;}
 ":="      {return assignment_operator;}
 [+\-*/;<>()]     {return yytext[0];}
+"writeln" {return writeln;}
 "begin"   {return begin_block;}
 "end"     {return end_block;}
 "var"     {return var_block_start;}
@@ -27,6 +26,9 @@
 "!="    return NE;
 "||"    return OR;
 "&&"    return AND;
+[a-zA-z]  {yylval.id = yytext[0]; return identifier;}
+[0-9]+    {yylval.num = atoi(yytext); return number;}
+['^][ \t\n_a-zA-Z0-9+=-]*[$']      {yylval.string = yytext; return string_regex;}
 .         {ECHO; yyerror("unexpected character in line number");}
 %%
 
