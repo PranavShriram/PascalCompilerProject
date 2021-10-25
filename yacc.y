@@ -52,20 +52,18 @@ lines : line {;}
 line  : assignment  {;}
         | if_then_else_block {;}
         | if_then_block {;}
-        | if_then_block lines {;}
-        | if_then_else_block lines {;}    
 
-if_then_else_block : if_then_block else_if_block ELSE line{printf("hello");} 
-                    | if_then_block else_if_block ELSE begin_block lines end_block{;} 
-                    | if_then_block ELSE begin_block lines end_block{;} 
-                    | if_then_block ELSE line{;} 
-
-if_then_block : IF exp THEN line  {;} | IF exp THEN begin_block lines end_block {;}
+if_then_else_block : if_then_block else_if_block {printf("hello");} 
+               
+if_then_block : IF exp THEN line  {printf("mmm");} | IF exp THEN begin_block lines end_block {;}
 
 else_if_block :   ELSE IF exp THEN line {printf("here");}
                 | ELSE IF exp THEN begin_block lines end_block {printf("here2");}
                 | ELSE IF exp THEN line else_if_block {printf("here3");}
                 | ELSE IF exp THEN begin_block lines end_block else_if_block {printf("here4");}
+                | {;}
+                | ELSE line {;}
+                | ELSE begin_block lines end_block {;}
 
 assignment : identifier assignment_operator exp ';' {if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
 
