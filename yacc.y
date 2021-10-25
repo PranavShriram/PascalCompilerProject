@@ -25,7 +25,7 @@ void setSymbolUsed(char symbol);
 %token <id> type_assignment_operator;
 %token <id> identifier
 %token <id> IF THEN LE GE EQ NE OR AND ELSE
-%type <num> pascal_code var_block type_assignment_lines code_block lines exp term
+%type <num> pascal_code var_block type_assignment_lines code_block lines exp 
 %type <id> assignment
 %type <id> print
 %type <id> if_then_block if_then_else_block else_if_block
@@ -76,24 +76,23 @@ assignment : identifier assignment_operator exp ';' {if(!getIsSymbolUsed($1)){pr
 print : writeln '(' string_regex ')' ';'  {;}
       | writeln '(' ')' ';'  {;}
 
-exp : term  {;}
+exp : number {;}
+    | identifier {if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
     | '(' exp ')' {;}
-    | exp '/' term {;}
-    | exp '*' term {;}
-    | exp '+' term {;}
-    | exp '-' term {;}
-    | exp '>' term {;}
-    | exp '<' term {;}
-    | exp LE term {;}
-    | exp GE term {;}
-    | exp EQ term {;}
-    | exp NE term {;}
-    | exp AND term {;}
-    | exp OR term {;}
-    | exp '!' term {;}
+    | exp '/' exp {;}
+    | exp '*' exp {;}
+    | exp '+' exp {;}
+    | exp '-' exp {;}
+    | exp '>' exp {;}
+    | exp '<' exp {;}
+    | exp LE exp {;}
+    | exp GE exp {;}
+    | exp EQ exp {;}
+    | exp NE exp {;}
+    | exp AND exp {;}
+    | exp OR exp {;}
+    | exp '!' exp {;}
 
-term : number {;}
-     | identifier {if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
 %%
 
 

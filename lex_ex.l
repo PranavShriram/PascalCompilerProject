@@ -27,8 +27,15 @@
 "||"    return OR;
 "&&"    return AND;
 [a-zA-z]  {yylval.id = yytext[0]; return identifier;}
-[0-9]+    {yylval.num = atoi(yytext); return number;}
-['^][ \t\n_a-zA-Z0-9+=-]*[$']      {yylval.string = yytext; return string_regex;}
+0 {
+ yylval.num = atoi(yytext);
+ return number;
+ }
+[1-9][0-9]* {
+ yylval.num = atoi(yytext);
+ return number;
+ } 
+ ['^][ \t\n_a-zA-Z0-9+=-]*[$']      {yylval.string = yytext; return string_regex;}
 .         {ECHO; yyerror("unexpected character in line number");}
 %%
 
