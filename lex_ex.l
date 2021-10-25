@@ -2,13 +2,15 @@
     #include<stdio.h>
     #include "y.tab.h"
     int yyerror(char *);
+    int yylineno;
 %}
 
 %%
 "end."    {return exit_command;}
 [a-zA-z]  {yylval.id = yytext[0]; return identifier;}
 [0-9]+    {yylval.num = atoi(yytext); return number;}
-[ \t\n]   {;}
+[ \t]     {;}
+[\n]      {printf("Parsing line number %4d\t\n", ++yylineno);}
 ":"       {return type_assignment_operator;}
 ":="      {return assignment_operator;}
 [+\-*/;<>()]     {return yytext[0];}
