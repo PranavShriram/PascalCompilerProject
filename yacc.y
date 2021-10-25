@@ -1,7 +1,9 @@
 %{
 void yyerror(char *s);
+int yylex();
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 int symbolsUsed[52];
 int yylineno;
 int getIsSymbolUsed(char symbol);
@@ -53,14 +55,14 @@ line  : assignment  {;}
         | if_then_else_block {;}
         | if_then_block {;}
 
-if_then_else_block : if_then_block else_if_block {printf("hello");} 
+if_then_else_block : if_then_block else_if_block {;} 
                
 if_then_block : IF exp THEN line  {printf("mmm");} | IF exp THEN begin_block lines end_block {;}
 
-else_if_block :   ELSE IF exp THEN line {printf("here");}
-                | ELSE IF exp THEN begin_block lines end_block {printf("here2");}
-                | ELSE IF exp THEN line else_if_block {printf("here3");}
-                | ELSE IF exp THEN begin_block lines end_block else_if_block {printf("here4");}
+else_if_block :   ELSE IF exp THEN line {;}
+                | ELSE IF exp THEN begin_block lines end_block {;}
+                | ELSE IF exp THEN line else_if_block {;}
+                | ELSE IF exp THEN begin_block lines end_block else_if_block {;}
                 | {;}
                 | ELSE line {;}
                 | ELSE begin_block lines end_block {;}
