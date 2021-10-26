@@ -11,6 +11,7 @@
 [\n]      {printf("Parsing line number %4d\t\n", ++yylineno);}
 ":"       {return type_assignment_operator;}
 ":="      {return assignment_operator;}
+","       {return seperator;}
 [+\-*/;<>()]     {return yytext[0];}
 "writeln" {return writeln;}
 "begin"   {return begin_block;}

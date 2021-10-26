@@ -17,6 +17,7 @@ void setSymbolUsed(char symbol);
 %token <num> number
 %token <string> string_regex
 %token <id> assignment_operator 
+%token <id> seperator
 %token <id> writeln
 %token <id> begin_block
 %token <id> end_block
@@ -83,7 +84,7 @@ switch_block : CASE '(' identifier ')' OF case_body end_block ';' {if(!getIsSymb
 case_body   : case_label case_else {;}
             | case_label case_body {;}
 
-case_label  : number ',' case_label {;}
+case_label  : number seperator case_label {;}
             | number type_assignment_operator ';' {;}
             | number type_assignment_operator assignment {;}
             | number type_assignment_operator print {;}
