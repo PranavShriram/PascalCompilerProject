@@ -24,11 +24,12 @@ void setSymbolUsed(char symbol);
 %token <id> integer_type
 %token <id> type_assignment_operator;
 %token <id> identifier
-%token <id> IF THEN LE GE EQ NE OR AND ELSE
+%token <id> IF THEN LE GE EQ NE OR AND ELSE CASE OF
 %type <num> pascal_code var_block type_assignment_lines code_block lines exp 
 %type <id> assignment
 %type <id> print
 %type <id> if_then_block if_then_else_block else_if_block
+%type <id> switch_block case_body case_label case_else
 %right '='
 %left AND OR
 %left '<' '>' LE GE EQ NE
@@ -54,10 +55,11 @@ code_block : begin_block lines exit_command {;}
 lines : line {;}
       | line lines {;} 
 
-line  : assignment  {;}
+line    : assignment  {;}
         | print  {;}
         | if_then_else_block {;}
         | if_then_block {;}
+        | switch_block {;}
 
 if_then_else_block : if_then_block else_if_block {;} 
                
@@ -75,6 +77,21 @@ assignment : identifier assignment_operator exp ';' {if(!getIsSymbolUsed($1)){pr
 
 print : writeln '(' string_regex ')' ';'  {;}
       | writeln '(' ')' ';'  {;}
+
+switch_block : CASE '(' identifier ')' OF case_body end_block ';' {if(!getIsSymbolUsed($3)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
+
+case_body   : case_label case_else {;}
+            | case_label case_body {;}
+
+case_label  : number ',' case_label {;}
+            | number type_assignment_operator ';' {;}
+            | number type_assignment_operator assignment {;}
+            | number type_assignment_operator print {;}
+            | number type_assignment_operator begin_block lines end_block ';' {;}
+
+case_else   : {;}
+            | ELSE line {;}
+            | ELSE begin_block lines end_block {;}
 
 exp : number {;}
     | identifier {if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}

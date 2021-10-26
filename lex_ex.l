@@ -20,6 +20,8 @@
 "if"    return IF;
 "then"    return THEN;
 "else"    return ELSE;
+"case"    return CASE;
+"of"      return OF;
 "<="    return LE;
 ">="    return GE;
 "=="    return EQ;
@@ -35,7 +37,7 @@
  yylval.num = atoi(yytext);
  return number;
  } 
- ['^][ \t\n_a-zA-Z0-9+=-]*[$']      {yylval.string = yytext; return string_regex;}
+['^][ \t\n_a-zA-Z0-9+=-]*[$']      {yylval.string = yytext; return string_regex;}
 .         {ECHO; yyerror("unexpected character in line number");}
 %%
 
