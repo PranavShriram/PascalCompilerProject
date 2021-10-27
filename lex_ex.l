@@ -9,7 +9,7 @@
 %%
 "end."    {return exit_command;}
 [ \t]     {;}
-[\n]      {printf("Parsing line number %4d\t\n", ++yylineno);}
+[\n]      {;}
 ":"       {return type_assignment_operator;}
 ":="      {return assignment_operator;}
 ","       {return seperator;}

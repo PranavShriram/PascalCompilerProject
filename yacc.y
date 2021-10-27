@@ -5,6 +5,7 @@ int yylex();
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <assert.h>
 #include "nodes.h"
 int symbolsUsed[52];
 int yylineno;
@@ -18,6 +19,11 @@ nodeType *assignDataType(int i);
 nodeType *assignString(char *str);
 void freeNode(nodeType *p); 
 enum operatorVals{ELSE_IF, SEMICOLON};
+
+
+// variables for printing syntax tree
+int depthVisited[200];
+void printSyntaxTree(nodeType *root,int depth,int lastchild);
 %}
 
 
@@ -33,8 +39,8 @@ enum operatorVals{ELSE_IF, SEMICOLON};
 %token <id> end_block
 %token <id> var_block_start
 %token <id> integer_type
-%token <id> type_assignment_operator;
 %token <id> identifier
+%token <id> type_assignment_operator;
 %token <id> IF THEN LE GE EQ NE OR AND ELSE CASE OF
 %type <nPtr> data_type   
 %type <nPtr> pascal_code var_block type_assignment_lines code_block lines exp  line type_assignment_line
@@ -53,19 +59,19 @@ enum operatorVals{ELSE_IF, SEMICOLON};
 
 %%
 
-pascal_code : var_block code_block {$$ = opr(begin_block, 2, $1, $2);}
+pascal_code : var_block code_block {$$ = opr(begin_block, 2, $1, $2);printSyntaxTree($$,0,0);}
 
 var_block : var_block_start type_assignment_lines {$$ = $2;}
  
 type_assignment_lines : type_assignment_line {$$ = $1;}
                       | type_assignment_lines type_assignment_line {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);}         
  
-type_assignment_line : identifier type_assignment_operator data_type ';' {$$ = opr(type_assignment_operator, 2, $1, $3);setSymbolUsed($1);}
+type_assignment_line : identifier type_assignment_operator data_type ';' {$$ = opr(type_assignment_operator, 2, id($1), $3);setSymbolUsed($1);}
 
-data_type : integer_type {$$ = assignDataType(integer_type);}
+data_type : integer_type {$$ = assignDataType($1);}
 
-code_block : begin_block lines exit_command {;}
-           | begin_block exit_command {;}
+code_block : begin_block lines exit_command {$$=$2;}
+           | begin_block exit_command {$$=NULL;}
 
 lines : line {$$ = $1;}
       | lines line  {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);} 
@@ -88,26 +94,26 @@ else_if_block :   ELSE IF exp THEN line {enum operatorVals op = ELSE_IF;$$ = opr
                 | ELSE line {$$ = opr(ELSE, 1, $2);}
                 | ELSE begin_block lines end_block {$$ = opr(ELSE, 1, $3);}
 
-assignment : identifier assignment_operator exp ';' {$$ = opr(assignment_operator, 2, $1, $3);if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
+assignment : identifier assignment_operator exp ';' {$$ = opr(assignment_operator, 2, id($1), $3);if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
 
 print : writeln '(' string_val ')' ';'  {$$ = opr(writeln, 1, $3);}
 
 string_val : string_regex {$$ = assignString($1);}
 
-switch_block : CASE '(' identifier ')' OF case_body end_block ';' {if(!getIsSymbolUsed($3)){$$ = opr(CASE, 2, $3, $6);printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
+switch_block : CASE '(' identifier ')' OF case_body end_block ';' {if(!getIsSymbolUsed($3)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}$$ = opr(CASE, 2, id($3), $6);}
 
 case_body   : case_label case_else {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);}
             | case_label case_body {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);}
 
-case_label  : number seperator case_label {$$ = opr(seperator, 2, $1, $3);}
-            | number type_assignment_operator ';' {$$ = opr(type_assignment_operator, 2, $1, NULL);}
-            | number type_assignment_operator assignment {$$ = opr(type_assignment_operator, 2, $1, $3);}
-            | number type_assignment_operator print {$$ = opr(type_assignment_operator, 2, $1, $3);}
-            | number type_assignment_operator begin_block lines end_block ';' {$$ = opr(type_assignment_operator, 2, $1, $4);}
+case_label  : number seperator case_label {$$ = opr(seperator, 2, con($1), $3);}
+            | number type_assignment_operator ';' {$$ = opr(type_assignment_operator, 1, con($1));}
+            | number type_assignment_operator assignment {$$ = opr(type_assignment_operator,2,con($1));}
+            | number type_assignment_operator print {$$ = opr(type_assignment_operator, 2, con($1), $3);}
+            | number type_assignment_operator begin_block lines end_block ';' {$$ = opr(type_assignment_operator, 2, con($1), $4);}
 
-case_else   : {;}
-            | ELSE line {;}
-            | ELSE begin_block lines end_block {;}
+case_else   : {$$=NULL;}
+            | ELSE line {$$=$2;}
+            | ELSE begin_block lines end_block {$$=$3;}
 
 exp : number {$$ = con($1);}
     | identifier {if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}$$ = id($1);}
@@ -160,6 +166,7 @@ nodeType *con(int value) {
     /* copy information */
     p->type = typeCon;
     p->con.value = value;
+    // printf("%p\n",p);
     return p;
 }
 
@@ -172,6 +179,7 @@ nodeType *id(int i) {
     /* copy information */
     p->type = typeId;
     p->id.i = i;
+    // printf("%p\n",p);
     return p;
 }
 
@@ -184,6 +192,7 @@ nodeType *assignDataType(int i) {
     /* copy information */
     p->type = typeData;
     p->dType.dataType = i;
+    // printf("%p\n",p);
     return p;
 }
 
@@ -194,8 +203,9 @@ nodeType *assignString(char *str) {
     if ((p = malloc(sizeof(nodeType))) == NULL)
     yyerror("out of memory");
     /* copy information */
-    p->type = typeData;
+    p->type = typeString;
     p->str.stringVal = str;
+    // printf("%p\n",p);
     return p;
 }
 
@@ -215,18 +225,74 @@ nodeType *opr(int oper, int nops, ...) {
     p->opr.nops = nops;
     va_start(ap, nops);
     for (i = 0; i < nops; i++)
-    p->opr.op[i] = va_arg(ap, nodeType*);
+    {
+        p->opr.op[i] = va_arg(ap, nodeType*);
+        // printf("---------------%p\n",p->opr.op[i]);
+    }
     va_end(ap);
+    // printf("%p\n",p);
     return p;
 }
 
 void yyerror(char *s){fprintf(stderr,"%s %d\n",s, ++yylineno);}
 
+
+// prints enum ints --> should map it to strings
+void printSyntaxTree(nodeType *node,int depth,int lastchild)
+{
+    if(node == NULL) return;
+    int i;
+    for(i = 1; i < depth;i++)
+    {
+        if(!depthVisited[i])
+        {
+            printf("|   ");
+        }
+        else{
+            printf("    ");
+        }
+    }
+
+    if(depth == 0)
+    {
+        // root
+        printf("%d\n",node->type);
+    }
+    else if(lastchild)
+    {
+        printf("+---%d\n",node->type);
+        depthVisited[depth] = 1;
+    }
+    else{
+        printf("+---%d\n",node->type);
+    }
+
+    if(node->type == typeOpr){
+    int maxs = node->opr.nops;
+    for(i = 0;i<maxs;i++)
+    {
+        if(i == maxs-1)
+        {
+            printSyntaxTree(node->opr.op[i],depth+1,1);
+        }
+        else{
+            printSyntaxTree(node->opr.op[i],depth+1,0);
+        }
+    }
+    }
+    depthVisited[depth] = 0;
+    
+}
+
 int main(void)
 {
     int i;
     yylineno = 0;
-    for(i = 0;i<52;i++)
+    for(i = 0;i < 200;i++)
+    {
+        depthVisited[i] = 0;
+    }
+    for(i = 0;i < 52;i++)
     {
         symbolsUsed[i] = 0;
     }
