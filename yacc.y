@@ -228,10 +228,8 @@ nodeType *opr(int oper, int nops, ...) {
     for (i = 0; i < nops; i++)
     {
         p->opr.op[i] = va_arg(ap, nodeType*);
-        // printf("---------------%p\n",p->opr.op[i]);
     }
     va_end(ap);
-    // printf("%p\n",p);
     return p;
 }
 
@@ -257,16 +255,20 @@ void printSyntaxTree(nodeType *node,int depth,int lastchild)
     if(depth == 0)
     {
         // root
-        printf("%s\n",mapping[node->type]);
+        printf("%s ",mapping[node->type]);
+        if(node->type == typeOpr)printf("%d",node->opr.oper);
     }
     else if(lastchild)
     {
-        printf("+---%s\n",mapping[node->type]);
+        printf("+---%s ",mapping[node->type]);
+        if(node->type == typeOpr)printf("%d",node->opr.oper);
         depthVisited[depth] = 1;
     }
     else{
-        printf("+---%s\n",mapping[node->type]);
+        printf("+---%s ",mapping[node->type]);
+        if(node->type == typeOpr)printf("%d",node->opr.oper);
     }
+    printf("\n");
 
     if(node->type == typeOpr){
     int maxs = node->opr.nops;
