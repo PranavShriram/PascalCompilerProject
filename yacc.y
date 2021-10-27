@@ -11,6 +11,7 @@ int symbolsUsed[52];
 int yylineno;
 int getIsSymbolUsed(char symbol);
 void setSymbolUsed(char symbol);
+char *mapping[5];
 
 nodeType *opr(int oper, int nops, ...);
 nodeType *id(int i);
@@ -256,15 +257,15 @@ void printSyntaxTree(nodeType *node,int depth,int lastchild)
     if(depth == 0)
     {
         // root
-        printf("%d\n",node->type);
+        printf("%s\n",mapping[node->type]);
     }
     else if(lastchild)
     {
-        printf("+---%d\n",node->type);
+        printf("+---%s\n",mapping[node->type]);
         depthVisited[depth] = 1;
     }
     else{
-        printf("+---%d\n",node->type);
+        printf("+---%s\n",mapping[node->type]);
     }
 
     if(node->type == typeOpr){
@@ -288,6 +289,11 @@ int main(void)
 {
     int i;
     yylineno = 0;
+    mapping[0] = "constant";
+    mapping[1] = "identifier";
+    mapping[2] = "operator";
+    mapping[3] = "dataType";
+    mapping[4] = "String";
     for(i = 0;i < 200;i++)
     {
         depthVisited[i] = 0;
