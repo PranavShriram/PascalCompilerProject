@@ -7,14 +7,14 @@ int yylex();
 #include <stdarg.h>
 #include <assert.h>
 #include "nodes.h"
-int symbolsUsed[52];
+#include "symbolTable.h"
 int yylineno;
-int getIsSymbolUsed(char symbol);
-void setSymbolUsed(char symbol);
+int getIsSymbolUsed(char *symbol);
+void setSymbolUsed(char *symbol);
 char *mapping[5];
 
 nodeType *opr(int oper, int nops, ...);
-nodeType *id(int i);
+nodeType *id(char *i);
 nodeType *con(int value);
 nodeType *assignDataType(int i);
 nodeType *assignString(char *str);
@@ -28,21 +28,21 @@ void printSyntaxTree(nodeType *root,int depth,int lastchild);
 %}
 
 
-%union {int num; char id; char* string; nodeType *nPtr; /* node pointer */ }
+%union {int num; char* id; char* string; nodeType *nPtr; /* node pointer */ }
 %start pascal_code
 %token exit_command
 %token <num> number
 %token <string> string_regex
-%token <id> assignment_operator 
-%token <id> seperator
-%token <id> writeln
-%token <id> begin_block
-%token <id> end_block
-%token <id> var_block_start
-%token <id> integer_type
+%token <num> assignment_operator 
+%token <num> seperator
+%token <num> writeln
+%token <num> begin_block
+%token <num> end_block
+%token <num> var_block_start
+%token <num> integer_type
 %token <id> identifier
-%token <id> type_assignment_operator;
-%token <id> IF THEN LE GE EQ NE OR AND ELSE CASE OF
+%token <num> type_assignment_operator;
+%token <num> IF THEN LE GE EQ NE OR AND ELSE CASE OF
 %type <nPtr> data_type   
 %type <nPtr> pascal_code var_block type_assignment_lines code_block lines exp  line type_assignment_line
 %type <nPtr> assignment
@@ -69,7 +69,7 @@ type_assignment_lines : type_assignment_line {$$ = $1;}
  
 type_assignment_line : identifier type_assignment_operator data_type ';' {$$ = opr(type_assignment_operator, 2, id($1), $3);setSymbolUsed($1);}
 
-data_type : integer_type {$$ = assignDataType($1);}
+data_type : integer_type {$$ = assignDataType(integer_type);}
 
 code_block : begin_block lines exit_command {$$=$2;}
            | begin_block exit_command {$$=NULL;}
@@ -95,13 +95,13 @@ else_if_block :   ELSE IF exp THEN line {enum operatorVals op = ELSE_IF;$$ = opr
                 | ELSE line {$$ = opr(ELSE, 1, $2);}
                 | ELSE begin_block lines end_block {$$ = opr(ELSE, 1, $3);}
 
-assignment : identifier assignment_operator exp ';' {$$ = opr(assignment_operator, 2, id($1), $3);if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
+assignment : identifier assignment_operator exp ';' {$$ = opr(assignment_operator, 2, id($1), $3);if(!getIsSymbolUsed($1)){printf("%s not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
 
 print : writeln '(' string_val ')' ';'  {$$ = opr(writeln, 1, $3);}
 
 string_val : string_regex {$$ = assignString($1);}
 
-switch_block : CASE '(' identifier ')' OF case_body end_block ';' {if(!getIsSymbolUsed($3)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}$$ = opr(CASE, 2, id($3), $6);}
+switch_block : CASE '(' identifier ')' OF case_body end_block ';' {if(!getIsSymbolUsed($3)){printf("%s not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}$$ = opr(CASE, 2, id($3), $6);}
 
 case_body   : case_label case_else {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);}
             | case_label case_body {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);}
@@ -136,26 +136,14 @@ exp : number {$$ = con($1);}
 %%
 
 
-// a-z , A-z
-int getId(char symbol)
+int getIsSymbolUsed(char *symbol)
 {
-    if(islower(symbol))
-    {
-        return symbol - 'a';
-    }
-    else{
-        return symbol - 'A' + 26;
-    }
+    return search(symbol);
 }
 
-int getIsSymbolUsed(char symbol)
+void setSymbolUsed(char *symbol)
 {
-    return symbolsUsed[getId(symbol)];
-}
-
-void setSymbolUsed(char symbol)
-{
-    symbolsUsed[getId(symbol)] = 1;
+    insert(symbol);
 }
 
 //Function for assigning value to constants and create pointer
@@ -172,7 +160,7 @@ nodeType *con(int value) {
 }
 
 //Function for assigning value to identifiers and create pointer
-nodeType *id(int i) {
+nodeType *id(char *i) {
     nodeType *p;
     /* allocate node */
     if ((p = malloc(sizeof(nodeType))) == NULL)
@@ -291,6 +279,8 @@ int main(void)
 {
     int i;
     yylineno = 0;
+    first = NULL;
+    last = NULL;
     mapping[0] = "constant";
     mapping[1] = "identifier";
     mapping[2] = "operator";
@@ -300,10 +290,7 @@ int main(void)
     {
         depthVisited[i] = 0;
     }
-    for(i = 0;i < 52;i++)
-    {
-        symbolsUsed[i] = 0;
-    }
+
     printf("%s\n",yyparse()?"":"Program compiled successfully");
 }
 

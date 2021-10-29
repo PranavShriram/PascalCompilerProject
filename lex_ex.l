@@ -30,13 +30,12 @@
 "!="    return NE;
 "||"    return OR;
 "&&"    return AND;
-[a-zA-z]  {yylval.id = yytext[0]; return identifier;}
+[_a-zA-Z][_a-zA-Z0-9]* {yylval.id = strdup(yytext); return identifier;}
 0 {
- yylval.num = atoi(yytext);
  return number;
  }
 [1-9][0-9]* {
- yylval.num = atoi(yytext);
+ yylval.num = atoi(strdup(yytext));
  return number;
  } 
 ['^][ \t\n_a-zA-Z0-9+=-]*[$']      {yylval.string = yytext; return string_regex;}

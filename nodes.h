@@ -7,7 +7,7 @@ typedef struct {
 
 /* identifiers */
 typedef struct {
-    int i; /* subscript to sym array */
+    char *i; /* subscript to sym array */
 } idNodeType;
 
 /* types */
