@@ -67,7 +67,7 @@ var_block : var_block_start type_assignment_lines {$$ = $2;}
 type_assignment_lines : type_assignment_line {$$ = $1;}
                       | type_assignment_lines type_assignment_line {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);}         
  
-type_assignment_line : identifier type_assignment_operator data_type ';' {$$ = opr(type_assignment_operator, 2, id($1), $3);setSymbolUsed($1);}
+type_assignment_line : identifier type_assignment_operator data_type ';' {if(getIsSymbolUsed($1)){printf("Variable %s already declared\n",$1);exit(EXIT_FAILURE);}$$ = opr(type_assignment_operator, 2, id($1), $3);setSymbolUsed($1);}
 
 data_type : integer_type {$$ = assignDataType(integer_type);}
 

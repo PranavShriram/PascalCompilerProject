@@ -4,25 +4,10 @@ a : integer;
 b : integer;
 ca : integer;
 da : integer;
-
+ca : integer;
 
 begin
-a := 5;
-b := 10;
-if (a < b) then b := 5;
-else ca := 20;
-
-case (a) of
-        5 , 4 : writeln('output 5 4');
-        3 : writeln('output 3');
-        2 : begin
-                writeln('output 2');
-                writeln('checked');
-            end;
-        else 
-            writeln('all other numbers');
-    end;
-
+a:=5;
 end. 
 
 
