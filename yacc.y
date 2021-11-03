@@ -67,7 +67,7 @@ var_block : var_block_start type_assignment_lines {$$ = $2;}
 type_assignment_lines : type_assignment_line {$$ = $1;}
                       | type_assignment_lines type_assignment_line {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);}         
  
-type_assignment_line : identifier type_assignment_operator data_type ';' {if(getIsSymbolUsed($1)){printf("Variable %s already declared\n",$1);exit(EXIT_FAILURE);}$$ = opr(type_assignment_operator, 2, id($1), $3);setSymbolUsed($1);}
+type_assignment_line : identifier type_assignment_operator data_type ';' {if(getIsSymbolUsed($1)){printf("Variable %s already declared\nSyntax Error on line no %d\n",$1,yylineno+1);exit(EXIT_FAILURE);}$$ = opr(type_assignment_operator, 2, id($1), $3);setSymbolUsed($1);}
 
 data_type : integer_type {$$ = assignDataType(integer_type);}
 
@@ -85,7 +85,7 @@ line    : assignment  {$$ = $1;}
 
 if_then_else_block : if_then_block else_if_block {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);} 
                
-if_then_block : IF exp THEN line  {$$ = opr(IF, 2, $2, $4);} | IF exp THEN begin_block lines end_block {$$ = opr(IF, 2, $2, $4);} 
+if_then_block : IF exp THEN line  {$$ = opr(IF, 2, $2, $4);} | IF exp THEN begin_block lines end_block {$$ = opr(IF, 2, $2, $5);} 
 
 else_if_block :   ELSE IF exp THEN line {enum operatorVals op = ELSE_IF;$$ = opr(op, 2, $3, $5);} 
                 | ELSE IF exp THEN begin_block lines end_block {enum operatorVals op = ELSE_IF;$$ = opr(op, 2, $3, $6);} 
@@ -95,13 +95,13 @@ else_if_block :   ELSE IF exp THEN line {enum operatorVals op = ELSE_IF;$$ = opr
                 | ELSE line {$$ = opr(ELSE, 1, $2);}
                 | ELSE begin_block lines end_block {$$ = opr(ELSE, 1, $3);}
 
-assignment : identifier assignment_operator exp ';' {$$ = opr(assignment_operator, 2, id($1), $3);if(!getIsSymbolUsed($1)){printf("%s not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}}
+assignment : identifier assignment_operator exp ';' {$$ = opr(assignment_operator, 2, id($1), $3);if(!getIsSymbolUsed($1)){printf("%s not declared\nsyntax error on line no %d\n",$1,yylineno+1);exit(EXIT_FAILURE);}}
 
 print : writeln '(' string_val ')' ';'  {$$ = opr(writeln, 1, $3);}
 
 string_val : string_regex {$$ = assignString($1);}
 
-switch_block : CASE '(' identifier ')' OF case_body end_block ';' {if(!getIsSymbolUsed($3)){printf("%s not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}$$ = opr(CASE, 2, id($3), $6);}
+switch_block : CASE '(' identifier ')' OF case_body end_block ';' {if(!getIsSymbolUsed($3)){printf("%s not declared\nsyntax error on line no %d \n",$1,yylineno+1);exit(EXIT_FAILURE);}$$ = opr(CASE, 2, id($3), $6);}
 
 case_body   : case_label case_else {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);}
             | case_label case_body {enum operatorVals op = SEMICOLON;$$ = opr(op, 2, $1, $2);}
@@ -117,7 +117,7 @@ case_else   : {$$=NULL;}
             | ELSE begin_block lines end_block {$$=$3;}
 
 exp : number {$$ = con($1);}
-    | identifier {if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error\n",$1);exit(EXIT_FAILURE);}$$ = id($1);}
+    | identifier {if(!getIsSymbolUsed($1)){printf("%c not declared\nsyntax error on line no %d\n",$1,yylineno+1);exit(EXIT_FAILURE);}$$ = id($1);}
     | '(' exp ')' {$$ = $2;}
     | exp '/' exp {$$ = opr('/', 2, $1, $3);}
     | exp '*' exp {$$ = opr('*', 2, $1, $3);}
@@ -221,7 +221,7 @@ nodeType *opr(int oper, int nops, ...) {
     return p;
 }
 
-void yyerror(char *s){fprintf(stderr,"%s %d\n",s, ++yylineno);}
+void yyerror(char *s){fprintf(stderr,"%s on line number %d\n",s, yylineno+1);}
 
 
 // prints enum ints --> should map it to strings

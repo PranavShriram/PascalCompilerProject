@@ -9,7 +9,7 @@
 %%
 "end."    {return exit_command;}
 [ \t]     {;}
-[\n]      {;}
+[\n]      {yylineno++;}
 ":"       {return type_assignment_operator;}
 ":="      {return assignment_operator;}
 ","       {return seperator;}
@@ -39,7 +39,7 @@
  return number;
  } 
 ['^][ \t\n_a-zA-Z0-9+=-]*[$']      {yylval.string = yytext; return string_regex;}
-.         {ECHO; yyerror("unexpected character in line number");}
+.         {ECHO; yyerror("unexpected character");}
 %%
 
 
