@@ -1,0 +1,31 @@
+var
+
+a : integer;
+b : integer;
+ca : integer;
+da : integer;
+
+
+begin
+a := 5;
+b := 10;
+if (a < b) 
+    then if (b < a) 
+           then
+            begin
+                b := 5;
+            end
+else ca := 20;
+
+case (a) of
+        5 , 4 : writeln('output 5 4');
+        3 : writeln('output 3');
+        2 : begin
+                writeln('output 2');
+                writeln('checked');
+            end;
+        else 
+            writeln('all other numbers');
+    end;
+
+end. 
